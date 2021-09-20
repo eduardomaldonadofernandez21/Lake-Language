@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "bisonLake.h"
+#include "bisonCalculadora.tab.h"
 char *substr(char *src, int m, int  n);
 %}
 

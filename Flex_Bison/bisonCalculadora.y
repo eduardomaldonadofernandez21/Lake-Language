@@ -10,10 +10,11 @@ void yyerror(char*);
 
 %union {
   char *name;
-  char *string;
+  char *str;
   double real;
   double real;
-  int function;     
+  int function;
+  int mainCode;     
   int compare;                       
   int integer;
   int type;
@@ -25,9 +26,10 @@ void yyerror(char*);
 %token <str> CHAR STRING
 %token <name> NAME
 %token <function> FUNCT
+%token <mainCode> MAINCODE
 %token <type> TYPE
 %token IF ELSE WHILE BREAK FOR 
-%token PRINT RETURN
+%token PRINT PRINTLN RETURN
 %token EOL
 
 %right '='
