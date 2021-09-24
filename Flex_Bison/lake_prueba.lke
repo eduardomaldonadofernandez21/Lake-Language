@@ -1,0 +1,8 @@
+funct Int fibonacci(Integer n){
+	IF(n <= 1){
+		return n;
+	}ELSE{
+		return (fibonacci(n-1) + fibonacci(n-2));
+	}
+}
+
