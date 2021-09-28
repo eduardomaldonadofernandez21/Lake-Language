@@ -2,7 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "bisonCalculadora.tab.h"
+#include "bisonPrint.tab.h"
+int numlin = 1;
 char *substr(char *src, int m, int  n);
 %}
 
@@ -59,9 +60,7 @@ OR      "OR"
 FLOAT   "Float"
 LONG    "Long"
 INTEGER "Int"
-PRINTLN "println"
 FUNCT   "funct"
-MAINCODE "MainCode"
 RETURN  "return"
 CHAR    "Char"
 STRING 	"String"
@@ -109,19 +108,19 @@ WHILE						  { return WHILE;}
 BREAK						  { return BREAK;}
 
 FUNCT   					  { return FUNCT;}
-MAINCODE                      { return MAINCODE;}
 RETURN   					  { return RETURN;}
 PRINT   					  { return PRINT;}
-PRINTLN 					  { return PRINTLN;}
 
-{CHAR_LETRA}					  { yylval.str = substr(yytext, 1, yyleng-1); return CHAR; }			  
-{CONST_CADENA}				  { yylval.str = substr(yytext, 1, yyleng-1); return STRING; }
+
 {NOMBRE}				  { yylval.name = substr(yytext, 0, yyleng); return NAME; }
+{CHAR_LETRA}					  { yylval.string = substr(yytext, 1, yyleng-1); return CHAR; }			  
+{CONST_CADENA}				  { yylval.string = substr(yytext, 1, yyleng-1); return STRING; }
 {CONST_INTEGER}					   { yylval.integer = atoi(yytext); return INTEGER; }
 {CONST_FLOAT}					   { yylval.real = atof(yytext); return FLOAT;}
 
-"\n"
-"\t"
+
+[ \t\r]
+\n        {numlin++; return EOL; } 
 .         {yyerror("Existe un error léxico"); }
 %%
 
