@@ -36,73 +36,73 @@ void yyerror(char*);
 %nonassoc <compare> COMPARE
 %nonassoc UMINUS
 
-%start function_definition
-
 %type <node> function_definition leftDeclaration list declaration parameter_funct parameter_to_funct statement variable_declaration variable_definition expr
+
+%start function_definition
 
 %%
 
-function_definition : FUNCT TYPE NAME '(' parameter_funct ')' '{' EOL list  '}'    { $$ = printf("Definición de funciones\n"); }
+function_definition : FUNCT TYPE NAME '(' parameter_funct ')' '{' EOL list  '}'    { printf("Definición de funciones\n"); }
                     ;
 
-list : statement EOL                       { $$ = printf("Cuerpo\n"); } 
-     | statement EOL list                  { $$ = printf("");  }
+list : statement EOL                       { printf("Cuerpo\n"); } 
+     | statement EOL list                  { printf("Statement list");  }
      | list EOL
-     | EOL                                 { $$ = printf("Fin de línea\n");  }
+     | EOL                                 { printf("Fin de línea\n");  }
      ;
 
-declaration : TYPE NAME                                                                  { $$ = printf("Nueva declaración de %s\n",$2);   }                                   
-            | TYPE '[' INTEGER ']' NAME                                                  { $$ = printf("Nueva declaración de posición %i de array %s\n",$3,$5);   }
+declaration : TYPE NAME                                                                  { printf("Nueva declaración de %s\n",$2);   }                                   
+            | TYPE '[' INTEGER ']' NAME                                                  { printf("Nueva declaración de posición %i de array %s\n",$3,$5);   }
             ;
 
-parameter_funct :                                                                { $$ = printf("\n");  }
+parameter_funct :                                                                { printf("\n");  }
                    | declaration                                                                                                                 
-                   | declaration ',' parameter_funct                            { $$ = printf("Declaración de parametro %s de una función\n", $1);  }
+                   | declaration ',' parameter_funct                            { printf("Declaración de parametro de una función\n");  }
                    ;
 
-parameter_to_funct :                                                             { $$ = printf("\n");  }
+parameter_to_funct :                                                             { printf("\n");  }
                       | expr                                                     
-                      | expr ',' parameter_to_funct                            { $$ = printf("Expresion de parametro %s de una función\n", $1);  }
+                      | expr ',' parameter_to_funct                            { printf("Expresion de parametro de una función\n");  }
                       ;
 
 statement : variable_declaration ';'
           | variable_definition ';'
           | expr ';'
-          | IF '(' expr ')' '{' EOL list '}'                                { $$ = printf("IF Condición %s\n", $3);  }
-          | IF '(' expr ')' '{' EOL list '}' ELSE '{' EOL list '}'          { $$ = printf("IF Condición %s ELSE\n",$3);  }
-          | WHILE '(' expr ')' '{' EOL list '}'                             { $$ = printf("WHILE Condición %s\n",$3); }
-          | RETURN expr ';'                                                 { $$ = printf("RETURN %s\n",$2);  }
-          | NAME '(' parameter_to_funct ')' ';'                             { $$ = printf("%s (%s)\n",$1,$3);  }
-          | BREAK ';'                                                       { $$ = printf("BREAK\n");}
+          | IF '(' expr ')' '{' EOL list '}'                                { printf("IF Condición\n");  }
+          | IF '(' expr ')' '{' EOL list '}' ELSE '{' EOL list '}'          { printf("IF Condición ELSE\n");  }
+          | WHILE '(' expr ')' '{' EOL list '}'                             { printf("WHILE Condición\n"); }
+          | RETURN expr ';'                                                 { printf("RETURN\n");  }
+          | NAME '(' parameter_to_funct ')' ';'                             { printf("NOMBRE DE VARIABLE ()");  }
+          | BREAK ';'                                                       { printf("BREAK\n");}
           ;
 
-variable_declaration : TYPE NAME                   { $$ = printf("Declaración de variable\n"); }
-                     | TYPE NAME '[' INTEGER ']'   { $$ = printf("Declaración de una posición de array\n");  }
-                     | TYPE NAME '=' expr          { $$ = printf("Declaración de variable dandole un valor\n");  }
+variable_declaration : TYPE NAME                   { printf("Declaración de variable\n"); }
+                     | TYPE NAME '[' INTEGER ']'   { printf("Declaración de una posición de array\n");  }
+                     | TYPE NAME '=' expr          { printf("Declaración de variable dandole un valor\n");  }
                      ;
 
-variable_definition : leftDeclaration '=' expr     { $$ =  printf("Definición de variable\n"); }  
+variable_definition : leftDeclaration '=' expr     { printf("Definición de variable\n"); }  
                     ;
 
-leftDeclaration : NAME                                                      { $$ = printf("%s\n",$1); }  
-                | NAME '[' expr ']'                                         { $$ = printf("%s [%s]\n",$1,$3); } 
+leftDeclaration : NAME                                                      { printf("NAME\n"); }  
+                | NAME '[' expr ']'                                         { printf("NAME [Expr]\n"); } 
                 ;
 
-expr :     leftDeclaration                  { $$ = printf("LeftDeclaration\n");  }
-           | '(' expr ')'                   { $$ = printf("Expresión dentro de ()\n");  }
-           | expr '-' expr                  { $$ = printf("Resta %f - %f\n",$1,$3);  }
-           | expr '+' expr                  { $$ = printf("Suma %f + %f\n",$1,$3);  }
-           | expr '*' expr                  { $$ = printf("Multiplicación %f * %f\n",$1,$3);  }
-           | expr '/' expr                  { $$ = printf("División %f / %f\n",$1,$3);  }
-           | expr '%' expr                  { $$ = printf("Modulo %f  %f\n",$1,$3);  }
-           | '-' expr %prec UMINUS          { $$ = printf("Número negativo %f\n",$2);  }
-           | PRINT '('  ',' expr ')'  { $$ = printf("Función print %s",$4);  }
-           | expr COMPARE expr              { $$ = printf("Símbolo comparación %f %i %f\n",$1,$2,$3);   }
-           | NAME '(' parameter_to_funct ')'{ $$ = printf("Llamada a función %s\n",$1);  }
-           | CHAR                           { $$ = printf("Char %c\n",$1);  }
-           | STRING                         { $$ = printf("String %s\n",$1);  }
-           | INTEGER                        { $$ = printf("Integer %i\n",$1); }
-           | FLOAT                          { $$ = printf("Float %f\n",$1);  }
+expr :     leftDeclaration                  { printf("LeftDeclaration\n");  }
+           | '(' expr ')'                   { printf("Expresión dentro de ()\n");  }
+           | expr '-' expr                  { printf("Resta\n");  }
+           | expr '+' expr                  { printf("Suma\n");  }
+           | expr '*' expr                  { printf("Multiplicación\n");  }
+           | expr '/' expr                  { printf("División\n");  }
+           | expr '%' expr                  { printf("Modulo\n");  }
+           | '-' expr %prec UMINUS          { printf("Número negativo\n");  }
+           | PRINT '('  ',' expr ')'        { printf("Función print");  }
+           | expr COMPARE expr              { printf("Símbolo comparación\n");   }
+           | NAME '(' parameter_to_funct ')'{ printf("Llamada a función\n");  }
+           | CHAR                           { printf("Char\n");  }
+           | STRING                         { printf("String\n");  }
+           | INTEGER                        { printf("Integer\n"); }
+           | FLOAT                          { printf("Float\n");  }
            ;
 
 
@@ -114,5 +114,5 @@ int main(int argc, char** argv) {
 }
 
 void yyerror(char* mens) {
-  printf("Error en linea: %s \n", mens);
+  printf("Error en linea: %i: %s \n", numlin ,mens);
 }
