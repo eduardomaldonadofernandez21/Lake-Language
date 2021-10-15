@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "bisonPrint.tab.h"
+#include "bisonLake1.tab.h"
 int numlin = 1;
 char *substr(char *src, int m, int  n);
 %}
@@ -60,7 +60,7 @@ OR      "OR"
 FLOAT   "Float"
 LONG    "Long"
 INTEGER "Int"
-FUNCT   "funct"
+FUNCT   "FUNCT"
 RETURN  "return"
 CHAR    "Char"
 STRING 	"String"
@@ -72,44 +72,45 @@ PRINT   "print"
 /* Es importante el orden, se va ejecutando en orden secuencial la acción cuando encuentra el patrón correspondiente */
 /* Ej: Si pongo la regla del FLOAT primero no va  llegar a las reglas de palabras reservadas */
 %%
-OP_SUMA 			    |
-OP_RESTA 		    	|
-OP_MULT				    |
-OP_DIV				    |
-OP_MOD				    |	
-OP_IGUAL 			    |
-OP_DOSPUNTOS 		  |
-PARENTESIS_ABRIR	|   
-PARENTESIS_CERRAR	|
-CORCHETE_ABRIR    |
-CORCHETE_CERRAR		|
-LLAVE_ABRIR       |
-LLAVE_CERRAR      |
-CHAR_COMA			    |
-FIN_SENTENCIA				  { return yytext[0]; }
+{OP_SUMA}		    |
+{OP_RESTA}		    	|
+{OP_MULT}				    |
+{OP_DIV}				    |
+{OP_MOD}				    |	
+{OP_IGUAL} 			    |
+{OP_DOSPUNTOS} 		  |
+{PARENTESIS_ABRIR}	|   
+{PARENTESIS_CERRAR}	|
+{CORCHETE_ABRIR}    |
+{CORCHETE_CERRAR}		|
+{LLAVE_ABRIR}       |
+{LLAVE_CERRAR}      |
+{CHAR_COMA}			    |
+{FIN_SENTENCIA}				  { return yytext[0]; }
 
-OP_MAYOR       				  { yylval.compare = 1; return COMPARE; }                    
-OP_MENOR   					  { yylval.compare = 2; return COMPARE; }
-OP_MAYORIGUAL				  { yylval.compare = 3; return COMPARE; }
-OP_MENORIGUAL				  { yylval.compare = 4; return COMPARE; }
-OP_COMP_IGUAL			      { yylval.compare = 5; return COMPARE; }
-OP_DISTINTO					  { yylval.compare = 6; return COMPARE; }
-OP_NEGACION					  { yylval.compare = 7; return COMPARE; }
+{OP_MAYOR}       				  { yylval.compare = 1; return COMPARE; }                    
+{OP_MENOR}   					  { yylval.compare = 2; return COMPARE; }
+{OP_MAYORIGUAL}				  { yylval.compare = 3; return COMPARE; }
+{OP_MENORIGUAL}				  { yylval.compare = 4; return COMPARE; }
+{OP_COMP_IGUAL}			      { yylval.compare = 5; return COMPARE; }
+{OP_DISTINTO}					  { yylval.compare = 6; return COMPARE; }
+{OP_NEGACION}					  { yylval.compare = 7; return COMPARE; }
 
-INTEGER						  { yylval.type = 1; return TYPE; }			
-LONG                          { yylval.type = 2; return TYPE; }
-FLOAT  						  { yylval.type = 3; return TYPE; }
-BOOLEAN                       { yylval.type = 4; return TYPE; }
-STRING 					      { yylval.type = 5; return TYPE; }
+{INTEGER}						  { yylval.type = 1; return TYPE; }			
+{LONG}                          { yylval.type = 2; return TYPE; }
+{FLOAT}  						  { yylval.type = 3; return TYPE; }
+{BOOLEAN}                       { yylval.type = 4; return TYPE; }
+{STRING} 					      { yylval.type = 5; return TYPE; }
 
-IF							  { return IF;}
-ELSE					      { return ELSE;}	
-WHILE						  { return WHILE;}
-BREAK						  { return BREAK;}
+{IF}							  { return IF;}
+{ELSE}					      { return ELSE;}	
+{WHILE}						  { return WHILE;}
+{FOR}						  { return FOR;}
+{BREAK}						  { return BREAK;}
 
-FUNCT   					  { return FUNCT;}
-RETURN   					  { return RETURN;}
-PRINT   					  { return PRINT;}
+{FUNCT}   					  { return FUNCT;}
+{RETURN}   					  { return RETURN;}
+{PRINT}   					  { return PRINT;}
 
 
 {NOMBRE}				  { yylval.name = substr(yytext, 0, yyleng); return NAME; }
@@ -119,7 +120,7 @@ PRINT   					  { return PRINT;}
 {CONST_FLOAT}					   { yylval.real = atof(yytext); return FLOAT;}
 
 
-[ \t\r]
+[ \t\r]   
 \n        {numlin++; return EOL; } 
 .         {yyerror("Existe un error léxico"); }
 %%
