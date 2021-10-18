@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../tabla_simbolos/ast.h"
-//#include "../tabla_simbolos/symbolTable.h"
+#include "../tabla_simbolos/symbolTable.h"
 
 extern FILE *yyin;   /* declarado en lexico */
 extern int numlin;   /* lexico le da valores */
