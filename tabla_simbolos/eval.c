@@ -52,40 +52,6 @@ int spaceRequiredForLocalVariable(struct ast *body, int offset) {
   return offset;
 }
 
-void evalFunction(struct ast *a) {
-  struct functAst *func = (struct functAst *)a;
-  struct ast *aux;
-  int numberOfParams = 0, numberOfBytesRequiered, label;
-  int baseDir = 8;
-  int auxDir = 0;
-
-  aux = func->params;
-  //label = getNextLabel();
-
-  printf("Function declaration, params: %d\n", func->params != NULL);
-
-  while (aux != NULL) {
-    if (aux->nodeType == 'L') {
-      //insertAsLocalVariable(aux->left, label, baseDir, 1);
-      auxDir = ((struct declaration *)aux->left)->type->bytes;
-      baseDir += auxDir < 4 ? 4 : auxDir;
-      aux = aux->right;
-    } else {
-      //insertAsLocalVariable(aux, label, baseDir, 1);
-      auxDir = ((struct declaration *)aux)->type->bytes;
-      baseDir += auxDir < 4 ? 4 : auxDir;
-      aux = NULL;
-    }
-    numberOfParams++;
-  }
-
-  numberOfBytesRequiered = spaceRequiredForLocalVariable(func->list, 0);
-
-  insertFunctionToSymbolTable(func->name, func->type, label, numberOfParams, numberOfBytesRequiered);
-
-  manageFunctionDeclarationInQ(label, func->params, func->list, numberOfParams, numberOfBytesRequiered);
-}
-
 void evalWhile(struct ast *a) {
   int auxBreakLabel = breakLabel;
   //breakLabel = getNextLabel();
@@ -146,35 +112,6 @@ void evalPrint(struct ast *a) {
   //gcWriteLabel(label);
   //gcRestoreContext(c);
   //popContext(c);
-}
-
-void evalCallFunct(struct ast *a) {
-  struct callFunction *callFunct = (struct callFunction *)a;
-  struct context *cont;
-  int moved;
-  int label;
-  int paramCounter;
-
-  struct Symbol *sym = lookupFunctionInSymbolTable(callFunct->name);
-  if (!sym) printf("Función no declarada\n");;
-
-  paramCounter = _checkParams(callFunct->params, sym);
-  //cont = pushContext();
-
-  //gcWriteContext(cont);
-  moved = evalArgumentList(callFunct->params, paramCounter);
-  /*
-  gcMoveStackPointer(-8);
-  //label = getNextLabel();
-  
-  gcSaveActualBase();
-  gcSaveReturningLabel(label);
-  gcJumpToLabel(sym->fun->label);
-  gcWriteLabel(label);
-  gcMoveStackPointer(moved + 8);
-  popContext();
-  gcRestoreContext(cont);
-  */
 }
 
 struct reg *evalNegativeNumber(struct ast *a){
@@ -376,6 +313,35 @@ int evalArgumentList(struct ast *a, int paramCounter) {
   return returnValue;
 }
 
+void evalCallFunct(struct ast *a) {
+  struct callFunction *callFunct = (struct callFunction *)a;
+  struct context *cont;
+  int moved;
+  int label;
+  int paramCounter;
+
+  struct Symbol *sym = lookupFunctionInSymbolTable(callFunct->name);
+  if (!sym) printf("Función no declarada\n");;
+
+  paramCounter = _checkParams(callFunct->params, sym);
+  //cont = pushContext();
+
+  //gcWriteContext(cont);
+  moved = evalArgumentList(callFunct->params, paramCounter);
+  /*
+  gcMoveStackPointer(-8);
+  //label = getNextLabel();
+  
+  gcSaveActualBase();
+  gcSaveReturningLabel(label);
+  gcJumpToLabel(sym->fun->label);
+  gcWriteLabel(label);
+  gcMoveStackPointer(moved + 8);
+  popContext();
+  gcRestoreContext(cont);
+  */
+}
+
 void *evalReturn(struct ast *a) {
   returnResult = eval(a->left);
   callReturn = 1;
@@ -443,6 +409,40 @@ void evalDeclarationArray(struct declaration *decl) {
   insertArrayToSymbolTable(decl->name, addr, decl->length, decl->type);
 
   //gcStoreArrayInMemory(addr, space);
+}
+
+void evalFunction(struct ast *a) {
+  struct functAst *func = (struct functAst *)a;
+  struct ast *aux;
+  int numberOfParams = 0, numberOfBytesRequiered, label;
+  int baseDir = 8;
+  int auxDir = 0;
+
+  aux = func->params;
+  //label = getNextLabel();
+
+  printf("Function declaration, params: %d\n", func->params != NULL);
+
+  while (aux != NULL) {
+    if (aux->nodeType == 'L') {
+      //insertAsLocalVariable(aux->left, label, baseDir, 1);
+      auxDir = ((struct declaration *)aux->left)->type->bytes;
+      baseDir += auxDir < 4 ? 4 : auxDir;
+      aux = aux->right;
+    } else {
+      //insertAsLocalVariable(aux, label, baseDir, 1);
+      auxDir = ((struct declaration *)aux)->type->bytes;
+      baseDir += auxDir < 4 ? 4 : auxDir;
+      aux = NULL;
+    }
+    numberOfParams++;
+  }
+
+  numberOfBytesRequiered = spaceRequiredForLocalVariable(func->list, 0);
+
+  insertFunctionToSymbolTable(func->name, func->type, label, numberOfParams, numberOfBytesRequiered);
+
+  manageFunctionDeclarationInQ(label, func->params, func->list, numberOfParams, numberOfBytesRequiered);
 }
 
 void evalDeclaration(struct ast *a){
