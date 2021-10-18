@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "bisonLake1.tab.h"
+#include "bisonPrint.tab.h"
 int numlin = 1;
 char *substr(char *src, int m, int  n);
 %}
@@ -11,7 +11,7 @@ DIGITO		    [0-9]
 LETRA		    [a-zA-Z]
 ESPACIO         [" "]
 NOMBRE  {LETRA}+({DIGITO}|{LETRA})*
-CHAR_LETRA      (\"[^\"]\")
+CHAR_LETRA      (\"[^\"]\") 
 CHAR_COMA       [","]
 CHAR_PUNTO      ["."]
 CHAR_PUNTOYCOMA [";"]
@@ -101,6 +101,7 @@ PRINT   "print"
 {FLOAT}  						  { yylval.type = 3; return TYPE; }
 {BOOLEAN}                       { yylval.type = 4; return TYPE; }
 {STRING} 					      { yylval.type = 5; return TYPE; }
+{CHAR} 					      { yylval.type = 6; return TYPE; }
 
 {IF}							  { return IF;}
 {ELSE}					      { return ELSE;}	
