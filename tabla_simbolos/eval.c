@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "ast.h"
 #include "symbolTable.h"
+#include "errorException.h"
 
 #define PRINT -12
 
@@ -45,7 +46,8 @@ int spaceRequiredForLocalVariable(struct ast *body, int offset) {
 
     if ((aux % 4) != 0) aux = (int)(aux / 4) * 4 + 4;
 
-    //insertAsLocalVariable(body, getActiveLabel(), -offset - aux, 0);
+
+    insertAsLocalVariable(body, getActiveLabel(), -offset - aux, 0);    
     return offset + aux;
   }
 
@@ -54,16 +56,15 @@ int spaceRequiredForLocalVariable(struct ast *body, int offset) {
 
 void evalWhile(struct ast *a) {
   int auxBreakLabel = breakLabel;
-  //breakLabel = getNextLabel();
+  manageConditions(a->left, breakLabel);  
   
-  //manageConditions(a->left, breakLabel);  
-  eval(a->right);           
-  //gcWriteLabel(breakLabel);
-  //breakLabel = auxBreakLabel;  
+  eval(a->right);   
+  breakLabel = auxBreakLabel;  
+  printSymbolTableContent();        
 }
 
 void evalBreak() {
-  //gcJumpToLabel(breakLabel);
+  //POR RELLENAR
 }
 
 
@@ -74,20 +75,16 @@ void evalList(struct ast *a) {
 
 void evalIf(struct ast *a) {
   struct ifFlow *i = (struct ifFlow *)a;
-  //int label = getNextLabel();
+  int label = 0; //int label = getNextLabel();
   int elseLabel;
 
-  //manageConditions(i->cond, label);
+  manageConditions(i->cond, label);
   eval(i->ifList);   
 
   if (i->elseList != NULL) {
-    //elseLabel = getNextLabel();
-    //gcJumpToLabel(elseLabel);
-    //gcWriteLabel(label);
     eval(i->elseList);
-    //label = elseLabel;
   }
-  //gcWriteLabel(label);
+
 }
 
 void evalPrint(struct ast *a) {
@@ -95,23 +92,11 @@ void evalPrint(struct ast *a) {
   struct reg *r0, *r1, *r2;
   int label;
 
-  //c = pushContext();
-  //gcWriteContext(c);
-  //label = getNextLabel();
-
-  //r0 = getRegister(lookupTypeInSymbolTable(1), "R", 0);
-  //gcNumericConstant(r0, label);
-
   r1 = eval(a->left);
 
   if (a->right != NULL) {
     r2 = eval(a->right);
   }
-
-  //gcJumpToLabel(PRINT);
-  //gcWriteLabel(label);
-  //gcRestoreContext(c);
-  //popContext(c);
 }
 
 struct reg *evalNegativeNumber(struct ast *a){
@@ -124,7 +109,6 @@ struct reg *evalNegativeNumber(struct ast *a){
     printf("Operando incorrecto para la operación\n");
   }
 
-  //gcMultiplyByConstant(r, -1);
   return r;
 }
 
@@ -156,19 +140,15 @@ struct reg *evalCondition(struct ast *a) {
   struct reg *right = eval(a->right);
   char *operation = invertCondition(a->nodeType);
 
-  //gcWriteLogicalOperation(operation, left, right);
-
-  //freeRegister(right);
   return left;
 }
 
 void manageConditions(struct ast *cond, int label) {
   struct reg *aux = eval(cond);
 
-  //gcWriteConditionUsingRegister(aux, label);
 }
 
-struct reg *evalRefArray(struct reference *r, struct Symbol *s) {
+struct reg *evalRefArray(struct reference *r, struct Symbol *s) { //No funciona correctamente
   struct reg *reg, *free;
 
   if (r->a) {
@@ -176,62 +156,47 @@ struct reg *evalRefArray(struct reference *r, struct Symbol *s) {
 
     if (!equalTypes(reg->type, lookupTypeInSymbolTable(1))) printf("El tamaño del array solo puede tener un valor Int\n");
 
-    //gcMultiplyRegisterForNumericConstant(reg, s->type);
+   
 
-    if (r->rightHand) {
-      /*free = assignRegister(reg->type);
-      gcStoreArrayDataInRegister(s->address, reg, s->type, free);
-
-      if (isInFunction() && s->reference) gcStorePointerInRegisterInTheSameRegister(reg);
-
-      freeRegister(free);
-    } else {
-      free = assignRegister(reg->type);
-      gcStoreArrayDirInRegister(s->address, reg, free);
-
-      if (isInFunction() && s->reference) gcStorePointerInRegisterInTheSameRegister(reg);
-
-      freeRegister(free);
-      */
+    if (r->rightHand) { //If para generación de codigo
+      //RELLENAR
     }
   } else {
-    //reg = assignRegister(s->type);
     reg->vector = 1;
     reg->length = s->a->length;
-    //gcStoreArrayAddressInRegister(s->address, reg);
   }
 
   reg->type = s->type;
   return reg;
 }
 
-struct reg *evalRef(struct ast *a) {
+struct reg *evalRef(struct ast *a) { //No funciona correctamente
   struct reference *ref = (struct reference *)a;
   struct Symbol *sym;
 
   struct reg *reg;
 
-  //sym = !isInFunction() ? lookupVariableInSymbolTable(ref->name) : lookupLocalVariableInSymbolTable(ref->name, actualScope);
-
-  if (!sym) printf("Variable no declarada\n");
+  sym = !isInFunction() ? lookupVariableInSymbolTable(ref->name) : lookupLocalVariableInSymbolTable(ref->name, actualScope);
+  printSymbolTableContent();
+  if (!sym){
+    printf("Variable no declarada\n");
+    throwError(5);
+  } 
 
   if (sym->a) {
     reg = evalRefArray(ref, sym); 
   } else {
     if (ref->rightHand)
     {
-      //reg = assignRegister(sym->type);
-      //gcCopyContentToRegister(reg, sym);
+      
     }
     else
     {
-      //reg = assignRegister(lookupTypeInSymbolTable(1));
       if (sym->a)
       {
         reg->vector = 1;
         reg->length = sym->a->length;
       }
-      //gcCopyAddrToRegister(reg, sym->address);
       reg->type = sym->type;
     }
   }
@@ -271,10 +236,8 @@ struct reg *evalCalculator(struct ast *a) {
          (equalTypes(right->type, lookupTypeInSymbolTable(3))))))
   {
     printf("Operando incorrecto para la operación\n");
+    throwError(12);
   }
-
-  //gcRegisterNumericCalculation(a->nodeType, left, right);
-  //freeRegister(right);
   return left;
 }
 
@@ -295,19 +258,14 @@ int evalArgumentList(struct ast *a, int paramCounter) {
     r = eval(a);
     returnValue += r->type->bytes;
     dummy->type = r->type;
-    //gcMoveStackPointer(-r->type->bytes);
-    //gcSaveInMemoryUsingRegister(dummy, r);
   } else {
     if (paramCounter >= 2) returnValue += evalArgumentList(a->right, paramCounter - 1);
 
     r = eval(a->left);
     returnValue += r->type->bytes;
     dummy->type = r->type;
-    //gcMoveStackPointer(-r->type->bytes);
-    //gcSaveInMemoryUsingRegister(dummy, r);
   }
 
-  //freeRegister(r);
   reference = 0;
 
   return returnValue;
@@ -324,22 +282,9 @@ void evalCallFunct(struct ast *a) {
   if (!sym) printf("Función no declarada\n");;
 
   paramCounter = _checkParams(callFunct->params, sym);
-  //cont = pushContext();
-
-  //gcWriteContext(cont);
-  moved = evalArgumentList(callFunct->params, paramCounter);
-  /*
-  gcMoveStackPointer(-8);
-  //label = getNextLabel();
   
-  gcSaveActualBase();
-  gcSaveReturningLabel(label);
-  gcJumpToLabel(sym->fun->label);
-  gcWriteLabel(label);
-  gcMoveStackPointer(moved + 8);
-  popContext();
-  gcRestoreContext(cont);
-  */
+  moved = evalArgumentList(callFunct->params, paramCounter);
+  
 }
 
 void *evalReturn(struct ast *a) {
@@ -357,22 +302,11 @@ void manageFunctionDeclarationInQ(int label, struct ast *params, struct ast *bod
   struct reg *r;
 
   actualScope = label;
-  
-  //inFunction();
 
-  //gcWriteLabel(label);
-  //gcNewBase();
-  //gcReserveSpaceForLocalVariables(bytesRequiered);
   eval(body);
-  //gcFreeLocalSpace();
-  //gcRestoreBase();
-  //r = assignRegister(lookupTypeInSymbolTable(1));
-  //gcStoreReturnLabelFromStackInRegister(r);
-  //gcPrintGTFromRegister(r);
-  //outsideFunction();
+  
 
   actualScope = 0;
-  //freeRegister(r);
 }
 
 struct reg *evalConstant(struct ast *a)
@@ -381,18 +315,16 @@ struct reg *evalConstant(struct ast *a)
   struct reg *r;
   int addr;
 
-  //r = assignRegister(cons->type);
+  
 
   if (equalTypes(lookupTypeInSymbolTable(5), cons->type) && cons->vector) {
     r->vector = 1;
     r->length = strlen(cons->stringVal) + 1;
-    //addr = getNextFreeAddress(strlen(cons->stringVal));
-    //gcStoreStringInMemory(addr, cons->stringVal);
-    //gcCopyAddrToRegister(r, addr);
+    
   }
   else
   {
-    //gcNumericConstant(r, cons->realVal);
+    //POR RELLENAR
   }
 
   return r;
@@ -404,11 +336,7 @@ void evalDeclarationArray(struct declaration *decl) {
 
   space = decl->length * decl->type->bytes;
 
-  //addr = getNextFreeAddress(space);
-
   insertArrayToSymbolTable(decl->name, addr, decl->length, decl->type);
-
-  //gcStoreArrayInMemory(addr, space);
 }
 
 void evalFunction(struct ast *a) {
@@ -419,18 +347,17 @@ void evalFunction(struct ast *a) {
   int auxDir = 0;
 
   aux = func->params;
-  //label = getNextLabel();
 
   printf("Function declaration, params: %d\n", func->params != NULL);
 
   while (aux != NULL) {
     if (aux->nodeType == 'L') {
-      //insertAsLocalVariable(aux->left, label, baseDir, 1);
+      insertAsLocalVariable(aux->left, label, baseDir, 1);
       auxDir = ((struct declaration *)aux->left)->type->bytes;
       baseDir += auxDir < 4 ? 4 : auxDir;
       aux = aux->right;
     } else {
-      //insertAsLocalVariable(aux, label, baseDir, 1);
+      insertAsLocalVariable(aux, label, baseDir, 1);
       auxDir = ((struct declaration *)aux)->type->bytes;
       baseDir += auxDir < 4 ? 4 : auxDir;
       aux = NULL;
@@ -452,10 +379,8 @@ void evalDeclaration(struct ast *a){
   if (decl->length >= 0) {
     evalDeclarationArray(decl);
   } else {
-    //addr = getNextFreeAddress(decl->type->bytes);
  
     insertVariableToSymbolTable(decl->name, addr, decl->type);    
-    //gcReservePrimitiveSpace(addr, decl->type);
   }
 }
 
@@ -474,26 +399,20 @@ struct reg *evalA(struct ast *a) {
 
     if (right->length > left->length) printf("Operación lógica incorrecta\n");
 
-    //free = assignRegister(right->type);
-    //gcCopyArrayToArrayUsingRegister(left, right, free, right->length);
-    //freeRegister(free);
   } else {
-    //gcSaveInMemoryUsingRegister(left, right);
-  }
 
-  //freeRegister(left);
+    }
+
   return right;
 }
 
 struct reg *eval(struct ast *a) {
-  // printf("NodeType: %d (%c)\n", a->nodeType, a->nodeType);
   struct reg *res = NULL;
 
   if (a->nodeType == 'L' || a->nodeType == 'F' || a->nodeType == 'W' ||
       a->nodeType == 'N' || a->nodeType == 'I' ||
       a->nodeType == 'B' || a->nodeType == 'C')
   {
-    //freeAllRegisters();
   }
 
   switch (a->nodeType) {
@@ -501,8 +420,7 @@ struct reg *eval(struct ast *a) {
       res = evalConstant(a);
       break;
     case 'D':
-      //if (!isInFunction()) 
-      evalDeclaration(a);
+      if (!isInFunction()) evalDeclaration(a);
       break;
     case 'N':
       break;
@@ -538,7 +456,7 @@ struct reg *eval(struct ast *a) {
     case 1: // >
     case 2: // <
     case 3: // >=
-    case 4: // <=
+    case 4: // <= 
     case 5: // ==
     case 6: // !=
       res = evalCondition(a);
@@ -558,9 +476,23 @@ struct reg *eval(struct ast *a) {
     default:
       break;
   }
+  //printSymbolTableContent();
   return res;
 }
 
 void treefree(struct ast * a) {
-  //freeAllRegisters();
+  //rellenar
+}
+
+
+int isInFunction() //Este método se necesita en la generación de codigo, cambia línea 481 x 480 
+{
+  //return scope;
+  return actualScope;
+}
+
+int getActiveLabel() //Este método se nece4sita en la generación de codigo, cambia línea 490 x 491, qManage.c
+{
+  //return label;
+  return 0;
 }

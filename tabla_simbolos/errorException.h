@@ -1,0 +1,1 @@
+void throwError(int index);

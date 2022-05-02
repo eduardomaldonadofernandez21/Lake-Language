@@ -186,7 +186,7 @@ void insertVariableToSymbolTable(char *name, int address, struct TypeSymbol *typ
   s->type = type;
   s->fun = NULL;
 
-  // printf("Inserting %s\n", s->name);
+  printf("Inserting %s\n", s->name);
   _addToSymbolTable(s);
 }
 
@@ -213,7 +213,7 @@ void insertLocalVariableToSymbolTable(char *name, int address, struct TypeSymbol
   }
   s->reference = reference;
 
-  // printf("Inserting Local\n");
+  printf("Inserting Local\n");
   _addToSymbolTable(s);
 }
 
@@ -233,6 +233,7 @@ void insertArrayToSymbolTable(char *name, int address, int length, struct TypeSy
   s->fun = NULL;
   arr->length = length;
 
+  printf("Inserting %s\n", s->name);
   _addToSymbolTable(s);
 }
 
@@ -289,6 +290,7 @@ void loadPrimitives()
   character->bytes = 1;
   character->id = 5; //STRING
   character->qName = 'S';
+
 
   _addToTypeSymbolTable(integer);
   _addToTypeSymbolTable(decimalD);
