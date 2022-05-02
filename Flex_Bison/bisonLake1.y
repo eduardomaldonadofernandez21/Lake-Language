@@ -6,7 +6,7 @@
 
 extern FILE *yyin;   /* declarado en lexico */
 extern int numlin;   /* lexico le da valores */
-//int yydebug=1;       /* modo debug si -t */
+int yydebug=0;       /* modo debug si -t */
 void yyerror(char*); 
 %}
 
@@ -45,7 +45,7 @@ void yyerror(char*);
 %%
 initial_main : /* HOLA */
              | initial_main function_definition EOL                                             {
-                                                                                                  eval($2);
+                                                                                                  printf("Function\n");printf("fin function"); eval($2); 
                                                                                                   treefree($2);
                                                                                                 } 
              | initial_main statement EOL                                                       {
@@ -88,12 +88,12 @@ statement : variable_declaration ';'
           | FOR '(' variable_declaration  ';' expr ')' '{' EOL list '}'                       { printf("FOR con 1 definicion de variable y 1 Condición \n"); }
           | FOR '(' expr ')' '{' EOL list '}'                       { printf("FOR con 1 Condición \n"); }
           | FOR '(' variable_declaration  ';' expr   ';' variable_definition ')' '{' EOL list '}'                       { printf("FOR con 1 definicion de variable, 1 Condición y suma de iteracion \n"); }
-          | RETURN expr ';'                                                 { $$ = newAst('X', $2, NULL); }
+          | RETURN expr ';'                                                 {  $$ = newAst('X', $2, NULL); }
           | NAME '(' parameter_to_funct ')' ';'                             { $$ = newCallFunction($1, $3); }
           | BREAK ';'                                                       { $$ = newAst('B', NULL, NULL); }
           ;
 
-variable_declaration : TYPE NAME                   { $$ = newDeclaration($1, $2); }  
+variable_declaration : TYPE NAME                   { $$ = newDeclaration($1, $2);   }  
                      | TYPE NAME '[' INTEGER ']'   { $$ = newArrayDeclaration($1, $2, $4); }
                      | TYPE NAME '=' expr          { $$ = newList(newDeclaration($1, $2), newAssign(newReference($2), $4)); }
                      ;
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
   loadPrimitives();
   if (argc>1) yyin=fopen(argv[1],"r");
   yyparse();
-  printSymbolTableContent();
+  //printSymbolTableContent();
 }
 
 void yyerror(char* mens) {
